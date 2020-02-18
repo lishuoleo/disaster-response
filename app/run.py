@@ -3,8 +3,11 @@ import plotly
 import pandas as pd
 
 from nltk.stem import WordNetLemmatizer
+
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk import pos_tag, word_tokenize
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
 import nltk
 
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -14,7 +17,7 @@ from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
 import joblib
 from sqlalchemy import create_engine
-
+nltk.download(['stopwords', 'punkt', 'wordnet', 'averaged_perceptron_tagger'])
 
 app = Flask(__name__)
 
@@ -37,12 +40,31 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         return pd.DataFrame(X_tagged)
 
 def tokenize(text):
-    tokens = word_tokenize(text)
+    """
+    Tokenize and clean text
+
+    Input:
+        text: message text
+
+    Output:
+        clean_tokens: cleaned(url/stopwords removed, lemmatised and stemmed) tokenised text
+    """
+#    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+#    detected_urls = re.findall(url_regex, text)
+#    for url in detected_urls:
+#        text = text.replace(url, "urlplaceholder")
+
+    words = word_tokenize(text)
+    tokens = [w for w in words if w not in stopwords.words("english")]
+
     lemmatizer = WordNetLemmatizer()
+    stemmer = PorterStemmer()
 
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tok = lemmatizer.lemmatize(clean_tok, pos = 'v')
+        clean_tok = stemmer.stem(clean_tok)
         clean_tokens.append(clean_tok)
 
     return clean_tokens

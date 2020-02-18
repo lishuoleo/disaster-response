@@ -1,45 +1,34 @@
-"""
-PREPROCESSING DATA
-Disaster Response Pipeline Project
-Udacity - Data Science Nanodegree
-
-Sample Script Execution:
-> python process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db
-
-Arguments:
-    1) CSV file containing messages (disaster_messages.csv)
-    2) CSV file containing categories (disaster_categories.csv)
-    3) SQLite destination database (DisasterResponse.db)
-"""
-
 import sys
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
- 
+
 def load_data(messages_filepath, categories_filepath):
     """
-    Load Data function
-    
+    This function load message.csv and categories.csv documents and output a
+    pandas DataFrame that is ready for processing.
+
     Arguments:
-        messages_filepath -> path to messages csv file
-        categories_filepath -> path to categories csv file
+        messages_filepath <- path to messages csv file
+        categories_filepath <- path to categories csv file
+
     Output:
-        df -> Loaded dasa as Pandas DataFrame
+        df <- merged dataframe from the message and category files
     """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
-    df = pd.merge(messages,categories,on='id')
-    return df 
+    df = pd.merge(messages, categories, on='id')
+    return df
 
 def clean_data(df):
     """
-    Clean Data function
-    
+    This function cleans the DataFrame by one hot encoding the target variable,
+    and remove duplicates.
+
     Arguments:
-        df -> raw data Pandas DataFrame
+        df <- DataFrame with raw elements input
     Outputs:
-        df -> clean data Pandas DataFrame
+        df <- cleaned DataFrame
     """
     categories = df.categories.str.split(pat=';',expand=True)
     firstrow = categories.iloc[0,:]
@@ -50,28 +39,25 @@ def clean_data(df):
         categories[column] = categories[column].astype(np.int)
     df = df.drop('categories',axis=1)
     df = pd.concat([df,categories],axis=1)
-    #df = pd.concat([df,pd.get_dummies(df.genre)],axis=1)
-    #df = df.drop(['genre','social'],axis=1) 
     df = df.drop_duplicates()
     return df
 
 def save_data(df, database_filename):
     """
-    Save Data function
-    
+    This function loads the cleaned dataframe to SQLite database.
+
     Arguments:
-        df -> Clean data Pandas DataFrame
-        database_filename -> database file (.db) destination path
+        df <- Cleaned DataFrame
+        database_filename <- filename of the .db file
     """
     engine = create_engine('sqlite:///'+ database_filename)
-    df.to_sql('df', engine, index=False)
-    pass  
+    df.to_sql('DisasterResponse', engine, index=False)
 
 
 def main():
     """
     Main Data Processing function
-    
+
     This function implement the ETL pipeline:
         1) Data extraction from .csv
         2) Data cleaning and pre-processing
@@ -88,12 +74,12 @@ def main():
 
         print('Cleaning data...')
         df = clean_data(df)
-        
+
         print('Saving data...\n    DATABASE: {}'.format(database_filepath))
         save_data(df, database_filepath)
-        
+
         print('Cleaned data saved to database!')
-    
+
     else:
         print('Please provide the filepaths of the messages and categories '\
               'datasets as the first and second argument respectively, as '\

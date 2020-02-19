@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
+
 def load_data(messages_filepath, categories_filepath):
     """
     This function load message.csv and categories.csv documents and output a
@@ -20,6 +21,7 @@ def load_data(messages_filepath, categories_filepath):
     df = pd.merge(messages, categories, on='id')
     return df
 
+
 def clean_data(df):
     """
     This function cleans the DataFrame by one hot encoding the target variable,
@@ -30,17 +32,18 @@ def clean_data(df):
     Outputs:
         df <- cleaned DataFrame
     """
-    categories = df.categories.str.split(pat=';',expand=True)
-    firstrow = categories.iloc[0,:]
-    category_colnames = firstrow.apply(lambda x:x[:-2])
+    categories = df.categories.str.split(pat=';', expand=True)
+    firstrow = categories.iloc[0, :]
+    category_colnames = firstrow.apply(lambda x: x[:-2])
     categories.columns = category_colnames
     for column in categories:
         categories[column] = categories[column].str[-1]
         categories[column] = categories[column].astype(np.int)
-    df = df.drop('categories',axis=1)
-    df = pd.concat([df,categories],axis=1)
+    df = df.drop('categories', axis=1)
+    df = pd.concat([df, categories], axis=1)
     df = df.drop_duplicates()
     return df
+
 
 def save_data(df, database_filename):
     """
@@ -50,7 +53,7 @@ def save_data(df, database_filename):
         df <- Cleaned DataFrame
         database_filename <- filename of the .db file
     """
-    engine = create_engine('sqlite:///'+ database_filename)
+    engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('DisasterResponse', engine, index=False)
 
 
@@ -81,11 +84,11 @@ def main():
         print('Cleaned data saved to database!')
 
     else:
-        print('Please provide the filepaths of the messages and categories '\
-              'datasets as the first and second argument respectively, as '\
-              'well as the filepath of the database to save the cleaned data '\
-              'to as the third argument. \n\nExample: python process_data.py '\
-              'disaster_messages.csv disaster_categories.csv '\
+        print('Please provide the filepaths of the messages and categories ' \
+              'datasets as the first and second argument respectively, as ' \
+              'well as the filepath of the database to save the cleaned data ' \
+              'to as the third argument. \n\nExample: python process_data.py ' \
+              'disaster_messages.csv disaster_categories.csv ' \
               'DisasterResponse.db')
 
 

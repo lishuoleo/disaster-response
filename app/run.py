@@ -17,9 +17,11 @@ from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
 import joblib
 from sqlalchemy import create_engine
+
 nltk.download(['stopwords', 'punkt', 'wordnet', 'averaged_perceptron_tagger'])
 
 app = Flask(__name__)
+
 
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
@@ -39,6 +41,7 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         X_tagged = pd.Series(X).apply(self.starting_verb)
         return pd.DataFrame(X_tagged)
 
+
 def tokenize(text):
     """
     Tokenize and clean text
@@ -49,10 +52,10 @@ def tokenize(text):
     Output:
         clean_tokens: cleaned(url/stopwords removed, lemmatised and stemmed) tokenised text
     """
-#    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-#    detected_urls = re.findall(url_regex, text)
-#    for url in detected_urls:
-#        text = text.replace(url, "urlplaceholder")
+    #    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    #    detected_urls = re.findall(url_regex, text)
+    #    for url in detected_urls:
+    #        text = text.replace(url, "urlplaceholder")
 
     words = word_tokenize(text)
     tokens = [w for w in words if w not in stopwords.words("english")]
@@ -63,38 +66,37 @@ def tokenize(text):
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tok = lemmatizer.lemmatize(clean_tok, pos = 'v')
+        clean_tok = lemmatizer.lemmatize(clean_tok, pos='v')
         clean_tok = stemmer.stem(clean_tok)
         clean_tokens.append(clean_tok)
 
     return clean_tokens
 
+
 # load data
-engine = create_engine('sqlite:///../data/DisasterResponse.db')
+engine = create_engine('sqlite:///data//DisasterResponse.db')
 df = pd.read_sql_table('DisasterResponse', engine)
 
 # load model
-model = joblib.load("../models/classifier.pkl")
+model = joblib.load("models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
 def index():
-
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
-    category_names = df.iloc[:,4:].columns
-    category_boolean = (df.iloc[:,4:] != 0).sum().values
-
+    category_names = df.iloc[:, 4:].columns
+    category_boolean = (df.iloc[:, 4:] != 0).sum().values
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
-            # GRAPH 1 - genre graph
+        # GRAPH 1 - genre graph
         {
             'data': [
                 Bar(
@@ -113,7 +115,7 @@ def index():
                 }
             }
         },
-            # GRAPH 2 - category graph
+        # GRAPH 2 - category graph
         {
             'data': [
                 Bar(
